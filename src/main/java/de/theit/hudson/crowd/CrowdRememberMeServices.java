@@ -131,9 +131,9 @@ public class CrowdRememberMeServices implements RememberMeServices {
 			} catch (InvalidTokenException ex) {
 				// LOG.log(Level.INFO, invalidToken(), ex);
 			} catch (ApplicationPermissionException ex) {
-				LOG.log(Level.WARNING, applicationPermission(), ex);
+				LOG.warning(applicationPermission());
 			} catch (InvalidAuthenticationException ex) {
-				LOG.log(Level.WARNING, invalidAuthentication(), ex);
+				LOG.warning(invalidAuthentication());
 			} catch (OperationFailedException ex) {
 				LOG.log(Level.SEVERE, operationFailed(), ex);
 			}
@@ -154,9 +154,9 @@ public class CrowdRememberMeServices implements RememberMeServices {
 		try {
 			this.configuration.crowdHttpAuthenticator.logout(request, response);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}
@@ -216,20 +216,17 @@ public class CrowdRememberMeServices implements RememberMeServices {
 		} catch (InvalidTokenException ex) {
 			// LOG.log(Level.INFO, invalidToken(), ex);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (ExpiredCredentialException ex) {
-			LOG.log(Level.WARNING,
-					expiredCredentials(crowdAuthenticationToken.getPrincipal()),
-					ex);
+			LOG.warning(expiredCredentials(crowdAuthenticationToken
+					.getPrincipal()));
 		} catch (InactiveAccountException ex) {
-			LOG.log(Level.WARNING,
-					accountExpired(crowdAuthenticationToken.getPrincipal()), ex);
+			LOG.warning(accountExpired(crowdAuthenticationToken.getPrincipal()));
 		} catch (ApplicationAccessDeniedException ex) {
-			LOG.log(Level.WARNING,
-					applicationAccessDenied(crowdAuthenticationToken
-							.getPrincipal()), ex);
+			LOG.warning(applicationAccessDenied(crowdAuthenticationToken
+					.getPrincipal()));
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}
@@ -248,9 +245,9 @@ public class CrowdRememberMeServices implements RememberMeServices {
 			// logout the user and close the SSO session
 			this.configuration.crowdHttpAuthenticator.logout(request, response);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}

@@ -289,14 +289,14 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 				}
 			};
 		} catch (GroupNotFoundException ex) {
-			LOG.log(Level.INFO, groupNotFound(groupname), ex);
+			LOG.info(groupNotFound(groupname));
 			throw new DataRetrievalFailureException(groupNotFound(groupname),
 					ex);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 			throw new DataRetrievalFailureException(applicationPermission(), ex);
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 			throw new DataRetrievalFailureException(invalidAuthentication(), ex);
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
@@ -331,20 +331,20 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			user = this.configuration.crowdClient.authenticateUser(pUsername,
 					pPassword);
 		} catch (UserNotFoundException ex) {
-			LOG.log(Level.INFO, userNotFound(pUsername), ex);
+			LOG.info(userNotFound(pUsername));
 			throw new BadCredentialsException(userNotFound(pUsername), ex);
 		} catch (ExpiredCredentialException ex) {
-			LOG.log(Level.WARNING, expiredCredentials(pUsername), ex);
+			LOG.warning(expiredCredentials(pUsername));
 			throw new BadCredentialsException(expiredCredentials(pUsername), ex);
 		} catch (InactiveAccountException ex) {
-			LOG.log(Level.WARNING, accountExpired(pUsername), ex);
+			LOG.warning(accountExpired(pUsername));
 			throw new AccountExpiredException(accountExpired(pUsername), ex);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 			throw new AuthenticationServiceException(applicationPermission(),
 					ex);
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 			throw new AuthenticationServiceException(invalidAuthentication(),
 					ex);
 		} catch (OperationFailedException ex) {

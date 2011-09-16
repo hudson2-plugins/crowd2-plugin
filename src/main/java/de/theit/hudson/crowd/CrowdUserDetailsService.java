@@ -106,13 +106,13 @@ public class CrowdUserDetailsService implements UserDetailsService {
 			// load the user object from the remote Crowd server
 			user = this.configuration.crowdClient.getUser(username);
 		} catch (UserNotFoundException ex) {
-			LOG.log(Level.INFO, userNotFound(username), ex);
+			LOG.info(userNotFound(username));
 			throw new UsernameNotFoundException(userNotFound(username), ex);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 			throw new DataRetrievalFailureException(applicationPermission(), ex);
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 			throw new DataRetrievalFailureException(invalidAuthentication(), ex);
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);

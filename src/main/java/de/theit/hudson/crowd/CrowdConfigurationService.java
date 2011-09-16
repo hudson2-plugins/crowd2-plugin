@@ -140,9 +140,9 @@ public class CrowdConfigurationService {
 				retval = true;
 			}
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}
@@ -169,11 +169,11 @@ public class CrowdConfigurationService {
 				retval = group.isActive();
 			}
 		} catch (GroupNotFoundException ex) {
-			LOG.log(Level.INFO, groupNotFound(this.groupName), ex);
+			LOG.info(groupNotFound(this.groupName));
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}
@@ -223,11 +223,11 @@ public class CrowdConfigurationService {
 				index += MAX_GROUPS;
 			}
 		} catch (UserNotFoundException ex) {
-			LOG.log(Level.INFO, userNotFound(username), ex);
+			LOG.info(userNotFound(username));
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 		} catch (OperationFailedException ex) {
 			LOG.log(Level.SEVERE, operationFailed(), ex);
 		}
@@ -255,11 +255,11 @@ public class CrowdConfigurationService {
 					index += MAX_GROUPS;
 				}
 			} catch (UserNotFoundException ex) {
-				LOG.log(Level.INFO, userNotFound(username), ex);
+				LOG.info(userNotFound(username));
 			} catch (InvalidAuthenticationException ex) {
-				LOG.log(Level.WARNING, invalidAuthentication(), ex);
+				LOG.warning(invalidAuthentication());
 			} catch (ApplicationPermissionException ex) {
-				LOG.log(Level.WARNING, applicationPermission(), ex);
+				LOG.warning(applicationPermission());
 			} catch (OperationFailedException ex) {
 				LOG.log(Level.SEVERE, operationFailed(), ex);
 			}

@@ -123,21 +123,21 @@ public class CrowdAuthenticationManager implements AuthenticationManager {
 			// authenticate user
 			this.configuration.crowdClient.authenticateUser(username, password);
 		} catch (UserNotFoundException ex) {
-			LOG.log(Level.INFO, userNotFound(username), ex);
+			LOG.info(userNotFound(username));
 			throw new BadCredentialsException(userNotFound(username), ex);
 		} catch (ExpiredCredentialException ex) {
-			LOG.log(Level.WARNING, expiredCredentials(username), ex);
+			LOG.warning(expiredCredentials(username));
 			throw new CredentialsExpiredException(expiredCredentials(username),
 					ex);
 		} catch (InactiveAccountException ex) {
-			LOG.log(Level.WARNING, accountExpired(username), ex);
+			LOG.warning(accountExpired(username));
 			throw new AccountExpiredException(accountExpired(username), ex);
 		} catch (ApplicationPermissionException ex) {
-			LOG.log(Level.WARNING, applicationPermission(), ex);
+			LOG.warning(applicationPermission());
 			throw new AuthenticationServiceException(applicationPermission(),
 					ex);
 		} catch (InvalidAuthenticationException ex) {
-			LOG.log(Level.WARNING, invalidAuthentication(), ex);
+			LOG.warning(invalidAuthentication());
 			throw new AuthenticationServiceException(invalidAuthentication(),
 					ex);
 		} catch (OperationFailedException ex) {
