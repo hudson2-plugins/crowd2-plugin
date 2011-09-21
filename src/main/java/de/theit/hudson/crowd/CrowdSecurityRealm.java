@@ -488,13 +488,6 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			Logger log = Logger.getLogger(getClass().getName());
 
 			Properties props = new Properties();
-			try {
-				props.load(getClass().getResourceAsStream("/crowd.properties"));
-			} catch (IOException ex) {
-				log.log(Level.SEVERE, cannotLoadCrowdProperties(), ex);
-				return FormValidation.error(cannotLoadCrowdProperties());
-			}
-
 			props.setProperty("application.name", applicationName);
 			props.setProperty("application.password", password);
 			props.setProperty("crowd.server.url", url);
