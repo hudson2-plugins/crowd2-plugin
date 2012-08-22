@@ -30,7 +30,6 @@ import static de.theit.hudson.crowd.ErrorMessages.applicationPermission;
 import static de.theit.hudson.crowd.ErrorMessages.expiredCredentials;
 import static de.theit.hudson.crowd.ErrorMessages.invalidAuthentication;
 import static de.theit.hudson.crowd.ErrorMessages.operationFailed;
-import static de.theit.hudson.crowd.ErrorMessages.userGroupNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.userNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.userNotValid;
 import hudson.security.SecurityRealm;
@@ -59,7 +58,7 @@ import com.atlassian.crowd.exception.UserNotFoundException;
 import com.atlassian.crowd.model.user.User;
 
 /**
- * This class implements the authentication manager for Hudson / Jenkins.
+ * This class implements the authentication manager for Hudson.
  * 
  * @author <a href="mailto:theit@gmx.de">Thorsten Heit (theit@gmx.de)</a>
  * @since 07.09.2011
@@ -113,14 +112,9 @@ public class CrowdAuthenticationManager implements AuthenticationManager {
 
 		// ensure that the group is available, active and that the user
 		// is a member of it
-		if (!this.configuration.isGroupActive()) {
-			throw new InsufficientAuthenticationException(
-					userGroupNotFound(username));
-		}
-
 		if (!this.configuration.isGroupMember(username)) {
 			throw new InsufficientAuthenticationException(userNotValid(
-					username, this.configuration.groupName));
+					username, this.configuration.allowedGroupNames));
 		}
 
 		String displayName = null;
@@ -133,7 +127,9 @@ public class CrowdAuthenticationManager implements AuthenticationManager {
 					username, password);
 			displayName = user.getDisplayName();
 		} catch (UserNotFoundException ex) {
-			LOG.info(userNotFound(username));
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info(userNotFound(username));
+			}
 			throw new BadCredentialsException(userNotFound(username), ex);
 		} catch (ExpiredCredentialException ex) {
 			LOG.warning(expiredCredentials(username));

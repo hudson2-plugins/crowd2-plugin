@@ -25,6 +25,8 @@
  */
 package de.theit.hudson.crowd;
 
+import java.util.Collection;
+
 import org.jvnet.localizer.ResourceBundleHolder;
 
 /**
@@ -74,6 +76,17 @@ public class ErrorMessages {
 	 */
 	public static String specifyGroup() {
 		return holder.format("specifyGroup");
+	}
+
+	/**
+	 * Returns the localized error message when no session validation interval
+	 * time is given.
+	 * 
+	 * @return The localized error message for a missing session validation
+	 *         interval time.
+	 */
+	public static String specifySessionValidationInterval() {
+		return holder.format("specifySessionValidationInterval");
 	}
 
 	/**
@@ -147,20 +160,6 @@ public class ErrorMessages {
 	}
 
 	/**
-	 * Returns the localized error message when the specified group does not
-	 * exist on the remote Crowd server or is not active.
-	 * 
-	 * @param groupname
-	 *            The name of the group. May not be <code>null</code>.
-	 * 
-	 * @return The localized error message when the specified group cannot be
-	 *         validated against the remote Crowd server.
-	 */
-	public static String cannotValidateGroup(String groupname) {
-		return holder.format("cannotValidateGroup", groupname);
-	}
-
-	/**
 	 * Returns the localized error message when the user password has expired
 	 * and must be changed.
 	 * 
@@ -186,15 +185,6 @@ public class ErrorMessages {
 	}
 
 	/**
-	 * Returns the localized error message when an invalid SSO token was found.
-	 * 
-	 * @return The localized error message for an invalid SSO token.
-	 */
-	public static String invalidToken() {
-		return holder.format("invalidToken");
-	}
-
-	/**
 	 * Returns the localized error message when a user does not have access to
 	 * authenticate against an application.
 	 * 
@@ -208,32 +198,42 @@ public class ErrorMessages {
 	}
 
 	/**
-	 * Returns the localized error message when the group of users that are
-	 * allowed to login into Hudson / Jenkins does not exist or is not active.
+	 * Returns the localized error message when a user does not have the
+	 * permission to login.
 	 * 
 	 * @param username
 	 *            The user name. May not be <code>null</code>.
+	 * @param groupNames
+	 *            The names of the groups allowed to login. May not be
+	 *            <code>null</code>.
 	 * 
-	 * @return The localized error message for a non-existing or non-active
-	 *         group.
+	 * @return The localized error message when a user does not have the
+	 *         permission to login.
 	 */
-	public static String userGroupNotFound(String username) {
-		return holder.format("userGroupNotFound", username);
+	public static String userNotValid(String username,
+			Collection<String> groupNames) {
+		return holder.format("userNotValid", username,
+				groupNamesToString(groupNames));
 	}
 
 	/**
-	 * Returns the localized error message when a user does not have the
-	 * permission to login into Hudson / Jenkins.
+	 * Creates a readable string representation of the given list of group
+	 * names.
 	 * 
-	 * @param username
-	 *            The user name. May not be <code>null</code>.
-	 * @param groupname
-	 *            The name of the group. May not be <code>null</code>.
-	 * 
-	 * @return The localized error message when a user does not have the
-	 *         permission to login into Hudson / Jenkins.
+	 * @param groupNames
+	 *            The names of the groups. May not be <code>null</code>.
+	 * @return A readable string representation with the given group names.
 	 */
-	public static String userNotValid(String username, String groupname) {
-		return holder.format("userNotValid", username, groupname);
+	private static String groupNamesToString(Collection<String> groupNames) {
+		StringBuilder sb = new StringBuilder();
+		boolean hasEntry = false;
+		for (String group : groupNames) {
+			if (hasEntry) {
+				sb.append(", ");
+			}
+			sb.append(group);
+		}
+
+		return sb.toString();
 	}
 }

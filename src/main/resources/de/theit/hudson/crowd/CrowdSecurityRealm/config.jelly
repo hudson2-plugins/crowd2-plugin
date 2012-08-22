@@ -34,12 +34,15 @@ THE SOFTWARE.
 	<f:entry title="${%Application Password}" field="password">
 		<f:password autocomplete="off" />
 	</f:entry>
-	<f:entry title="${%Group name for users}" field="group">
+	<f:entry title="${%Group name/s for users}" field="group">
 		<f:textbox default="hudson-users" />
 	</f:entry>
 	<f:advanced>
 		<f:entry title="${%Use nested groups}" field="nestedGroups">
 			<f:checkbox />
+		</f:entry>
+		<f:entry title="${%Session validation interval}" field="sessionValidationInterval">
+			<f:textbox default="2" />
 		</f:entry>
 	</f:advanced>
 	<f:validateButton method="testConnection" title="${%Check Connection}"

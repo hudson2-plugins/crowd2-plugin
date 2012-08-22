@@ -28,7 +28,6 @@ package de.theit.hudson.crowd;
 import static de.theit.hudson.crowd.ErrorMessages.applicationPermission;
 import static de.theit.hudson.crowd.ErrorMessages.invalidAuthentication;
 import static de.theit.hudson.crowd.ErrorMessages.operationFailed;
-import static de.theit.hudson.crowd.ErrorMessages.userGroupNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.userNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.userNotValid;
 import hudson.security.SecurityRealm;
@@ -89,16 +88,11 @@ public class CrowdUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException, DataAccessException {
-		// check whether the Hudson / Jenkins user group in Crowd exists and is
-		// active
-		if (!this.configuration.isGroupActive()) {
-			throw new DataRetrievalFailureException(
-					userGroupNotFound(this.configuration.groupName));
-		}
-
+		// check whether there's at least one active group the user is a member
+		// of
 		if (!this.configuration.isGroupMember(username)) {
 			throw new DataRetrievalFailureException(userNotValid(username,
-					this.configuration.groupName));
+					this.configuration.allowedGroupNames));
 		}
 
 		User user;
@@ -109,7 +103,9 @@ public class CrowdUserDetailsService implements UserDetailsService {
 			}
 			user = this.configuration.crowdClient.getUser(username);
 		} catch (UserNotFoundException ex) {
-			LOG.info(userNotFound(username));
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info(userNotFound(username));
+			}
 			throw new UsernameNotFoundException(userNotFound(username), ex);
 		} catch (ApplicationPermissionException ex) {
 			LOG.warning(applicationPermission());

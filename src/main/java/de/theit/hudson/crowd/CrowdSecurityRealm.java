@@ -28,7 +28,6 @@ package de.theit.hudson.crowd;
 import static de.theit.hudson.crowd.ErrorMessages.accountExpired;
 import static de.theit.hudson.crowd.ErrorMessages.applicationPermission;
 import static de.theit.hudson.crowd.ErrorMessages.cannotLoadCrowdProperties;
-import static de.theit.hudson.crowd.ErrorMessages.cannotValidateGroup;
 import static de.theit.hudson.crowd.ErrorMessages.expiredCredentials;
 import static de.theit.hudson.crowd.ErrorMessages.groupNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.invalidAuthentication;
@@ -37,7 +36,7 @@ import static de.theit.hudson.crowd.ErrorMessages.specifyApplicationName;
 import static de.theit.hudson.crowd.ErrorMessages.specifyApplicationPassword;
 import static de.theit.hudson.crowd.ErrorMessages.specifyCrowdUrl;
 import static de.theit.hudson.crowd.ErrorMessages.specifyGroup;
-import static de.theit.hudson.crowd.ErrorMessages.userGroupNotFound;
+import static de.theit.hudson.crowd.ErrorMessages.specifySessionValidationInterval;
 import static de.theit.hudson.crowd.ErrorMessages.userNotFound;
 import static de.theit.hudson.crowd.ErrorMessages.userNotValid;
 import hudson.Extension;
@@ -92,8 +91,8 @@ import com.atlassian.crowd.model.user.User;
 import com.atlassian.crowd.service.client.ClientPropertiesImpl;
 
 /**
- * This class provides the Hudson / Jenkins security realm for authenticating
- * users against a remote Crowd server.
+ * This class provides the security realm for authenticating users against a
+ * remote Crowd server.
  * 
  * @author <a href="mailto:theit@gmx.de">Thorsten Heit (theit@gmx.de)</a>
  * @since 06.09.2011
@@ -120,6 +119,13 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 	public final boolean nestedGroups;
 
 	/**
+	 * The number of minutes to cache authentication validation in the session.
+	 * If this value is set to 0, each HTTP request will be authenticated with
+	 * the Crowd server.
+	 */
+	private final int sessionValidationInterval;
+
+	/**
 	 * The configuration data necessary for accessing the services on the remote
 	 * Crowd server.
 	 */
@@ -141,16 +147,22 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 	 * @param nestedGroups
 	 *            <code>true</code> when nested groups may be used.
 	 *            <code>false</code> else.
+	 * @param sessionValidationInterval
+	 *            The number of minutes to cache authentication validation in
+	 *            the session. If this value is set to <code>0</code>, each HTTP
+	 *            request will be authenticated with the Crowd server.
 	 */
 	@SuppressWarnings("hiding")
 	@DataBoundConstructor
 	public CrowdSecurityRealm(String url, String applicationName,
-			String password, String group, boolean nestedGroups) {
+			String password, String group, boolean nestedGroups,
+			int sessionValidationInterval) {
 		this.url = url.trim();
 		this.applicationName = applicationName.trim();
 		this.password = password.trim();
 		this.group = group.trim();
 		this.nestedGroups = nestedGroups;
+		this.sessionValidationInterval = sessionValidationInterval;
 	}
 
 	/**
@@ -176,7 +188,8 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			props.setProperty("crowd.base.url", crowdUrl);
 			props.setProperty("application.login.url", crowdUrl + "console/");
 			props.setProperty("crowd.server.url", this.url + "services/");
-			props.setProperty("session.validationinterval", "0");
+			props.setProperty("session.validationinterval",
+					String.valueOf(this.sessionValidationInterval));
 		} else {
 			LOG.warning("Client properties are incomplete");
 		}
@@ -292,7 +305,9 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 				}
 			};
 		} catch (GroupNotFoundException ex) {
-			LOG.info(groupNotFound(groupname));
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info(groupNotFound(groupname));
+			}
 			throw new DataRetrievalFailureException(groupNotFound(groupname),
 					ex);
 		} catch (ApplicationPermissionException ex) {
@@ -318,14 +333,9 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			throws AuthenticationException {
 		// ensure that the group is available, active and that the user
 		// is a member of it
-		if (!this.configuration.isGroupActive()) {
-			throw new InsufficientAuthenticationException(
-					userGroupNotFound(this.configuration.groupName));
-		}
-
 		if (!this.configuration.isGroupMember(pUsername)) {
 			throw new InsufficientAuthenticationException(userNotValid(
-					pUsername, this.configuration.groupName));
+					pUsername, this.configuration.allowedGroupNames));
 		}
 
 		User user;
@@ -341,7 +351,9 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			user = this.configuration.crowdClient.authenticateUser(pUsername,
 					pPassword);
 		} catch (UserNotFoundException ex) {
-			LOG.info(userNotFound(pUsername));
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info(userNotFound(pUsername));
+			}
 			throw new BadCredentialsException(userNotFound(pUsername), ex);
 		} catch (ExpiredCredentialException ex) {
 			LOG.warning(expiredCredentials(pUsername));
@@ -477,6 +489,35 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 		}
 
 		/**
+		 * Performs on-the-fly validation of the form field 'session validation
+		 * interval'.
+		 * 
+		 * @param sessionValidationInterval
+		 *            The session validation interval time in minutes.
+		 * @return Indicates the outcome of the validation. This is sent to the
+		 *         browser.
+		 */
+		public FormValidation doCheckSessionValidationInterval(
+				@QueryParameter final String sessionValidationInterval) {
+			if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
+				return FormValidation.ok();
+			}
+
+			try {
+				if (0 == sessionValidationInterval.length()
+						|| Integer.valueOf(sessionValidationInterval)
+								.intValue() < 0) {
+					return FormValidation
+							.error(specifySessionValidationInterval());
+				}
+			} catch (NumberFormatException ex) {
+				return FormValidation.error(specifySessionValidationInterval());
+			}
+
+			return FormValidation.ok();
+		}
+
+		/**
 		 * Checks whether the connection to the Crowd server can be established
 		 * using the given credentials.
 		 * 
@@ -487,7 +528,7 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 		 * @param password
 		 *            The application's password.
 		 * @param group
-		 *            The Crowd group users have to belong to if specified.
+		 *            The Crowd groups users have to belong to if specified.
 		 * 
 		 * @return Indicates the outcome of the validation. This is sent to the
 		 *         browser.
@@ -513,10 +554,14 @@ public class CrowdSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 			try {
 				configuration.crowdClient.testConnection();
 
-				if (configuration.isGroupActive()) {
-					return FormValidation.ok();
+				// ensure that the given group names are available and active
+				for (String groupName : configuration.allowedGroupNames) {
+					if (!configuration.isGroupActive(groupName)) {
+						return FormValidation.error(groupNotFound(groupName));
+					}
 				}
-				return FormValidation.error(cannotValidateGroup(group));
+
+				return FormValidation.ok();
 			} catch (InvalidAuthenticationException ex) {
 				log.log(Level.WARNING, invalidAuthentication(), ex);
 				return FormValidation.error(invalidAuthentication());
